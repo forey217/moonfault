@@ -1,0 +1,10 @@
+import {
+  "forey217/moonfault" @corelib,
+}
+
+pkgtype(kind: "foreign_library")
+
+options(
+  supported_targets: "js",
+  link: { "js": { "format": "esm" } },
+)
