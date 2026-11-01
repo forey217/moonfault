@@ -1,31 +1,49 @@
 ///|
-pub(all) suberror FaultError { Invalid(String); Limit(String) } derive(Eq, @debug.Debug)
+pub(all) suberror FaultError {
+  Invalid(String)
+  Limit(String)
+} derive(Eq, @debug.Debug)
 
 ///|
-pub(all) struct Event { id : String; probability : Double } derive(Eq, @debug.Debug)
+pub(all) struct Event {
+  id : String
+  probability : Double
+} derive(Eq, @debug.Debug)
 
 ///|
-pub(all) enum GateKind { And; Or; Vote(Int) } derive(Eq, @debug.Debug)
+pub(all) enum GateKind {
+  And
+  Or
+  Vote(Int32)
+} derive(Eq, @debug.Debug)
 
 ///|
-pub(all) struct Gate { id : String; kind : GateKind; inputs : Array[String] } derive(Eq, @debug.Debug)
+pub(all) struct Gate {
+  id : String
+  kind : GateKind
+  inputs : Array[String]
+} derive(Eq, @debug.Debug)
 
 ///|
-priv struct Node { variable : Int; low : Int; high : Int }
+priv struct Node {
+  variable : Int32
+  low : Int32
+  high : Int32
+}
 
 ///|
 priv struct Manager {
   nodes : Array[Node]
-  unique : Map[(Int, Int, Int), Int]
-  cache : Map[(Int, Int, Int), Int]
-  mut work : Int
+  unique : Map[(Int32, Int32, Int32), Int32]
+  cache : Map[(Int32, Int32, Int32), Int32]
+  mut work : Int32
 }
 
 ///|
 pub struct Tree {
   priv events : Array[Event]
   priv nodes : Array[Node]
-  priv root : Int
+  priv root : Int32
 }
 
 ///|
@@ -42,16 +60,20 @@ pub(all) struct Analysis {
   importance : Array[Importance]
   minimal_cut_sets : Array[Array[String]]
   cut_union_bound : Double
-  bdd_nodes : Int
-  basic_events : Int
+  bdd_nodes : Int32
+  basic_events : Int32
 } derive(Eq, ToJson, @debug.Debug)
 
 ///|
 fn valid_probability(p : Double) -> Unit raise FaultError {
-  guard p >= 0.0 && p <= 1.0 else { raise Invalid("event probability must be finite and in [0,1]") }
+  guard p >= 0.0 && p <= 1.0 else {
+    raise Invalid("event probability must be finite and in [0,1]")
+  }
 }
 
 ///|
 fn valid_id(id : String) -> Unit raise FaultError {
-  guard id.length() > 0 && id.length() <= 128 else { raise Invalid("identifier must contain 1..128 UTF-16 units") }
+  guard id.length() > 0 && id.length() <= 128 else {
+    raise Invalid("identifier must contain 1..128 UTF-16 units")
+  }
 }

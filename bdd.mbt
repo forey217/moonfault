@@ -1,36 +1,80 @@
 ///|
 fn Manager::new() -> Manager {
-  { nodes: [{ variable: 1000, low: 0, high: 0 }, { variable: 1000, low: 1, high: 1 }], unique: Map([]), cache: Map([]), work: 0 }
+  {
+    nodes: [
+      { variable: 1000, low: 0, high: 0, },
+      { variable: 1000, low: 1, high: 1, },
+    ],
+    unique: Map([]),
+    cache: Map([]),
+    work: 0,
+  }
 }
 
 ///|
-fn Manager::make(self : Manager, variable : Int, low : Int, high : Int) -> Int raise FaultError {
-  if low == high { return low }
+fn Manager::make(
+  self : Manager,
+  variable : Int32,
+  low : Int32,
+  high : Int32,
+) -> Int32 raise FaultError {
+  if low == high {
+    return low
+  }
   let key = (variable, low, high)
-  if self.unique.get(key) is Some(id) { return id }
-  guard self.nodes.length() < 20000 else { raise Limit("ROBDD exceeds 20000 nodes; change variable order or simplify model") }
+  if self.unique.get(key) is Some(id) {
+    return id
+  }
+  guard self.nodes.length() < 20000 else {
+    raise Limit(
+      "ROBDD exceeds 20000 nodes; change variable order or simplify model",
+    )
+  }
   let id = self.nodes.length()
-  self.nodes.push({ variable, low, high })
+  self.nodes.push({ variable, low, high, })
   self.unique[key] = id
   id
 }
 
 ///|
-fn Manager::apply(self : Manager, op : Int, a : Int, b : Int) -> Int raise FaultError {
+fn Manager::apply(
+  self : Manager,
+  op : Int32,
+  a : Int32,
+  b : Int32,
+) -> Int32 raise FaultError {
   self.work = self.work + 1
-  guard self.work <= 2000000 else { raise Limit("BDD apply work exceeds 2000000 calls") }
-  if op == 0 {
-    if a == 0 || b == 0 { return 0 }
-    if a == 1 { return b }
-    if b == 1 { return a }
-  } else {
-    if a == 1 || b == 1 { return 1 }
-    if a == 0 { return b }
-    if b == 0 { return a }
+  guard self.work <= 2000000 else {
+    raise Limit("BDD apply work exceeds 2000000 calls")
   }
-  if a == b { return a }
+  if op == 0 {
+    if a == 0 || b == 0 {
+      return 0
+    }
+    if a == 1 {
+      return b
+    }
+    if b == 1 {
+      return a
+    }
+  } else {
+    if a == 1 || b == 1 {
+      return 1
+    }
+    if a == 0 {
+      return b
+    }
+    if b == 0 {
+      return a
+    }
+  }
+  if a == b {
+    return a
+  }
   let key = (op, a.min(b), a.max(b))
-  if self.cache.get(key) is Some(id) { return id }
+  if self.cache.get(key) is Some(id) {
+    return id
+  }
   let x = self.nodes[a]
   let y = self.nodes[b]
   let variable = x.variable.min(y.variable)
@@ -44,13 +88,26 @@ fn Manager::apply(self : Manager, op : Int, a : Int, b : Int) -> Int raise Fault
 }
 
 ///|
-fn build_gate(id : String, gates : Map[String, Gate], states : Map[String, Int], roots : Map[String, Int], manager : Manager, depth : Int) -> Int raise FaultError {
+fn build_gate(
+  id : String,
+  gates : Map[String, Gate],
+  states : Map[String, Int32],
+  roots : Map[String, Int32],
+  manager : Manager,
+  depth : Int32,
+) -> Int32 raise FaultError {
   guard depth <= 128 else { raise Limit("gate dependency depth exceeds 128") }
-  if roots.get(id) is Some(root) { return root }
+  if roots.get(id) is Some(root) {
+    return root
+  }
   guard states.get(id) != Some(1) else { raise Invalid("gate cycle at " + id) }
-  guard gates.get(id) is Some(gate) else { raise Invalid("unknown gate/event reference: " + id) }
+  guard gates.get(id) is Some(gate) else {
+    raise Invalid("unknown gate/event reference: " + id)
+  }
   states[id] = 1
-  let inputs = gate.inputs.map(child => build_gate(child, gates, states, roots, manager, depth + 1))
+  let inputs = gate.inputs.map(child => {
+    build_gate(child, gates, states, roots, manager, depth + 1)
+  })
   let root = match gate.kind {
     And => inputs.fold(init=1, (a, b) => manager.apply(0, a, b))
     Or => inputs.fold(init=0, (a, b) => manager.apply(1, a, b))
@@ -73,42 +130,76 @@ fn build_gate(id : String, gates : Map[String, Gate], states : Map[String, Int],
 ///|
 /// Compile a coherent AND/OR/k-of-n DAG. Repeated event references share one variable.
 /// order is an exact permutation of event IDs, or [] for stable lexical ordering.
-pub fn compile(events : Array[Event], gates : Array[Gate], top : String, order : Array[String]) -> Tree raise FaultError {
-  guard events.length() > 0 && events.length() <= 64 && gates.length() <= 256 else { raise Limit("use 1..64 events and at most 256 gates") }
+pub fn compile(
+  events : Array[Event],
+  gates : Array[Gate],
+  top : String,
+  order : Array[String],
+) -> Tree raise FaultError {
+  guard events.length() > 0 && events.length() <= 64 && gates.length() <= 256 else {
+    raise Limit("use 1..64 events and at most 256 gates")
+  }
   let names : Map[String, Bool] = Map([])
   let event_map : Map[String, Event] = Map([])
   for event in events {
     valid_id(event.id)
     valid_probability(event.probability)
-    guard !names.contains(event.id) else { raise Invalid("duplicate event/gate id") }
+    guard !names.contains(event.id) else {
+      raise Invalid("duplicate event/gate id")
+    }
     names[event.id] = true
     event_map[event.id] = event
   }
   let gs : Map[String, Gate] = Map([])
   for g in gates {
     valid_id(g.id)
-    guard !names.contains(g.id) else { raise Invalid("duplicate event/gate id") }
-    guard g.inputs.length() > 0 && g.inputs.length() <= 64 else { raise Invalid("gate needs 1..64 inputs") }
-    if g.kind is Vote(k) { guard k > 0 && k <= g.inputs.length() else { raise Invalid("vote threshold must be 1..input count") } }
+    guard !names.contains(g.id) else {
+      raise Invalid("duplicate event/gate id")
+    }
+    guard g.inputs.length() > 0 && g.inputs.length() <= 64 else {
+      raise Invalid("gate needs 1..64 inputs")
+    }
+    if g.kind is Vote(k) {
+      guard k > 0 && k <= g.inputs.length() else {
+        raise Invalid("vote threshold must be 1..input count")
+      }
+    }
     let seen : Map[String, Bool] = Map([])
-    for input in g.inputs { guard !seen.contains(input) else { raise Invalid("duplicate direct gate input") }; seen[input] = true }
+    for input in g.inputs {
+      guard !seen.contains(input) else {
+        raise Invalid("duplicate direct gate input")
+      }
+      seen[input] = true
+    }
     names[g.id] = true
-    gs[g.id] = { ..g, inputs: g.inputs.copy() }
+    gs[g.id] = { ..g, inputs: g.inputs.copy(), }
   }
-  let ids = if order.length() == 0 { let ids = events.map(e => e.id); ids.sort(); ids } else { order.copy() }
-  guard ids.length() == events.length() else { raise Invalid("variable order must contain every event exactly once") }
+  let ids = if order.length() == 0 {
+    let ids = events.map(e => e.id)
+    ids.sort()
+    ids
+  } else {
+    order.copy()
+  }
+  guard ids.length() == events.length() else {
+    raise Invalid("variable order must contain every event exactly once")
+  }
   let seen : Map[String, Bool] = Map([])
   let ordered : Array[Event] = []
-  let roots : Map[String, Int] = Map([])
+  let roots : Map[String, Int32] = Map([])
   let manager = Manager::new()
   for i, id in ids {
-    guard !seen.contains(id) && event_map.get(id) is Some(event) else { raise Invalid("variable order must be a permutation of event IDs") }
+    guard !seen.contains(id) && event_map.get(id) is Some(event) else {
+      raise Invalid("variable order must be a permutation of event IDs")
+    }
     seen[id] = true
     ordered.push(event)
     roots[id] = manager.make(i, 0, 1)
   }
-  let states : Map[String, Int] = Map([])
-  for gate in gates { ignore(build_gate(gate.id, gs, states, roots, manager, 0)) }
+  let states : Map[String, Int32] = Map([])
+  for gate in gates {
+    ignore(build_gate(gate.id, gs, states, roots, manager, 0))
+  }
   let root = build_gate(top, gs, states, roots, manager, 0)
-  { events: ordered, nodes: manager.nodes, root }
+  { events: ordered, nodes: manager.nodes, root, }
 }

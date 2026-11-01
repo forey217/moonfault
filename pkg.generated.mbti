@@ -1,0 +1,83 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "forey217/moonfault"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn compile(Array[Event], Array[Gate], String, Array[String]) -> Tree raise FaultError
+
+pub fn run_json(String) -> String
+
+// Errors
+pub(all) suberror FaultError {
+  Invalid(String)
+  Limit(String)
+} derive(Eq, @debug.Debug)
+pub fn FaultError::equal(Self, Self) -> Bool
+pub fn FaultError::not_equal(Self, Self) -> Bool
+pub fn FaultError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub(all) struct Analysis {
+  probability : Double
+  importance : Array[Importance]
+  minimal_cut_sets : Array[Array[String]]
+  cut_union_bound : Double
+  bdd_nodes : Int
+  basic_events : Int
+} derive(Eq, ToJson, @debug.Debug)
+pub fn Analysis::equal(Self, Self) -> Bool
+pub fn Analysis::not_equal(Self, Self) -> Bool
+pub fn Analysis::to_json(Self) -> Json
+pub fn Analysis::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Event {
+  id : String
+  probability : Double
+} derive(Eq, @debug.Debug)
+pub fn Event::equal(Self, Self) -> Bool
+pub fn Event::not_equal(Self, Self) -> Bool
+pub fn Event::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Gate {
+  id : String
+  kind : GateKind
+  inputs : Array[String]
+} derive(Eq, @debug.Debug)
+pub fn Gate::equal(Self, Self) -> Bool
+pub fn Gate::not_equal(Self, Self) -> Bool
+pub fn Gate::to_repr(Self) -> @debug.Repr
+
+pub(all) enum GateKind {
+  And
+  Or
+  Vote(Int)
+} derive(Eq, @debug.Debug)
+pub fn GateKind::equal(Self, Self) -> Bool
+pub fn GateKind::not_equal(Self, Self) -> Bool
+pub fn GateKind::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Importance {
+  event : String
+  if_failed : Double
+  if_working : Double
+  birnbaum : Double
+} derive(Eq, ToJson, @debug.Debug)
+pub fn Importance::equal(Self, Self) -> Bool
+pub fn Importance::not_equal(Self, Self) -> Bool
+pub fn Importance::to_json(Self) -> Json
+pub fn Importance::to_repr(Self) -> @debug.Repr
+
+pub struct Tree {
+  // private fields
+}
+pub fn Tree::analyze(Self, Map[String, Double], Map[String, Bool], Int) -> Analysis raise FaultError
+pub fn Tree::importance(Self, Map[String, Double], Map[String, Bool]) -> Array[Importance] raise FaultError
+pub fn Tree::minimal_cut_sets(Self, Int) -> Array[Array[String]] raise FaultError
+pub fn Tree::probability(Self, Map[String, Double], Map[String, Bool]) -> Double raise FaultError
+
+// Type aliases
+
+// Traits
