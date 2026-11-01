@@ -1,0 +1,1 @@
+Independent MoonBit consumer module. Repository moon.work resolves local source during development. After publication copy this directory elsewhere and run `moon update && moon test` to resolve the registry package.
