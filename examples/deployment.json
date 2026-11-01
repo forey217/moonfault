@@ -1,0 +1,40 @@
+{
+  "model": {
+    "events": [
+      {
+        "id": "network",
+        "probability": 0.03
+      },
+      {
+        "id": "database",
+        "probability": 0.01
+      },
+      {
+        "id": "cache",
+        "probability": 0.1
+      }
+    ],
+    "gates": [
+      {
+        "id": "backend",
+        "kind": "and",
+        "inputs": [
+          "database",
+          "cache"
+        ]
+      },
+      {
+        "id": "failed",
+        "kind": "or",
+        "inputs": [
+          "network",
+          "backend"
+        ]
+      }
+    ],
+    "top": "failed"
+  },
+  "forced": {
+    "network": false
+  }
+}

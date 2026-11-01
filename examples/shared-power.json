@@ -1,0 +1,45 @@
+{
+  "model": {
+    "events": [
+      {
+        "id": "power",
+        "probability": 0.02
+      },
+      {
+        "id": "server_a",
+        "probability": 0.05
+      },
+      {
+        "id": "server_b",
+        "probability": 0.05
+      }
+    ],
+    "gates": [
+      {
+        "id": "a_down",
+        "kind": "or",
+        "inputs": [
+          "power",
+          "server_a"
+        ]
+      },
+      {
+        "id": "b_down",
+        "kind": "or",
+        "inputs": [
+          "power",
+          "server_b"
+        ]
+      },
+      {
+        "id": "service_down",
+        "kind": "and",
+        "inputs": [
+          "a_down",
+          "b_down"
+        ]
+      }
+    ],
+    "top": "service_down"
+  }
+}
