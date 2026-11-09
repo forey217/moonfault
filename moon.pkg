@@ -1,4 +1,6 @@
 import {
   "moonbitlang/core/json",
   "moonbitlang/core/debug",
+  "moonbitlang/core/string",
+  "Milky2018/xml",
 }
