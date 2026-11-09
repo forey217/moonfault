@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE opsa-mef>
+<opsa-mef>
+  <define-fault-tree name="SharedPower">
+    <define-gate name="service_down">
+      <and><gate name="a_down"/><gate name="b_down"/></and>
+    </define-gate>
+    <define-gate name="a_down"><or><basic-event name="power"/><basic-event name="server_a"/></or></define-gate>
+    <define-gate name="b_down"><or><basic-event name="power"/><basic-event name="server_b"/></or></define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="power"><float value="0.02"/></define-basic-event>
+    <define-basic-event name="server_a"><float value="0.05"/></define-basic-event>
+    <define-basic-event name="server_b"><float value="0.05"/></define-basic-event>
+  </model-data>
+</opsa-mef>

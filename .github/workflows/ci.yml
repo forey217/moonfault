@@ -22,6 +22,12 @@ jobs:
       - run: moon test --target wasm --deny-warn
       - run: moon test --target native --deny-warn
       - run: npm run verify
+      - name: Install independent SCRAM oracle
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y scram
+      - name: Compare MEF exports, signed primes and risk factors with SCRAM
+        run: python3 scripts/scram_compare.py
       - uses: actions/upload-artifact@v4
         with:
           name: moonfault-verification

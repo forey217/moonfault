@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opsa-mef>
+  <define-fault-tree name="Network">
+    <define-gate name="top">
+      <label>主链路 &amp; 备用链路：局部同名事件必须分开。</label>
+      <attributes><attribute name="case" value="scoped"/></attributes>
+      <or><gate name="Main.down"/><gate name="Network.Backup.down"/></or>
+    </define-gate>
+    <define-component name="Main" role="private">
+      <define-gate name="down"><and><basic-event name="link"/><house-event name="enabled"/></and></define-gate>
+      <define-basic-event name="link"><parameter name="base"/></define-basic-event>
+      <define-house-event name="enabled"><constant value="true"/></define-house-event>
+    </define-component>
+    <define-component name="Backup" role="private">
+      <define-gate name="down"><and><basic-event name="link"/><not><house-event name="disabled"/></not></and></define-gate>
+      <define-basic-event name="link"><mul><float value="2.0"/><parameter name="base"/></mul></define-basic-event>
+      <define-house-event name="disabled"/>
+    </define-component>
+  </define-fault-tree>
+  <model-data><define-parameter name="base"><float value="0.03"/></define-parameter></model-data>
+</opsa-mef>

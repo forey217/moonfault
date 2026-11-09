@@ -76,7 +76,7 @@ test('invalid unreachable cycle, duplicate input and unsupported gate produce er
   for (const model of [
     { events, gates: [{ id: 'unused', kind: 'and', inputs: ['unused'] }], top: 'a' },
     { events, gates: [{ id: 'top', kind: 'vote', threshold: 2, inputs: ['a', 'a'] }], top: 'top' },
-    { events, gates: [{ id: 'top', kind: 'not', inputs: ['a'] }], top: 'top' },
+    { events, gates: [{ id: 'top', kind: 'priority', inputs: ['a'] }], top: 'top' },
   ]) assert.equal(run({ model }).code, 'invalid');
 });
 

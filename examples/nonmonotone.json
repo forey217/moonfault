@@ -1,0 +1,8 @@
+{
+  "model": {
+    "events": [{"id":"primary","probability":0.1},{"id":"backup","probability":0.2},{"id":"sensor","probability":0.3}],
+    "houses": [{"id":"enabled","value":true}],
+    "gates": [{"id":"top","formula":{"kind":"and","args":["enabled",{"kind":"cardinality","min":1,"max":1,"args":["primary","backup","sensor"]}]}}],
+    "top":"top"
+  }
+}

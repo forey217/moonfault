@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opsa-mef>
+  <define-fault-tree name="Selector">
+    <define-gate name="top">
+      <label>Mode-select circuit: one branch is live when mode fails, the other when it works.</label>
+      <or><gate name="failed_mode"/><gate name="working_mode"/></or>
+    </define-gate>
+    <define-gate name="failed_mode"><and><basic-event name="mode"/><basic-event name="left"/></and></define-gate>
+    <define-gate name="working_mode"><and><not><basic-event name="mode"/></not><basic-event name="right"/></and></define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="mode"><float value="0.2"/></define-basic-event>
+    <define-basic-event name="left"><float value="0.1"/></define-basic-event>
+    <define-basic-event name="right"><float value="0.4"/></define-basic-event>
+  </model-data>
+</opsa-mef>
