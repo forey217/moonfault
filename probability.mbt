@@ -1,9 +1,9 @@
 ///|
-pub fn Tree::probability(
+fn Tree::weights(
   self : Tree,
   overrides : Map[String, Double],
   forced : Map[String, Bool],
-) -> Double raise FaultError {
+) -> Array[Double] raise FaultError {
   let known : Map[String, Bool] = Map([])
   for e in self.events {
     known[e.id] = true
@@ -17,18 +17,33 @@ pub fn Tree::probability(
   for id, _ in forced {
     guard known.contains(id) else { raise Invalid("unknown conditioned event") }
   }
-  let values = [0.0, 1.0]
-  for i = 2; i < self.nodes.length(); i = i + 1 {
-    let node = self.nodes[i]
-    let e = self.events[node.variable]
-    let p = match forced.get(e.id) {
+  self.events.map(e => {
+    match forced.get(e.id) {
       Some(true) => 1.0
       Some(false) => 0.0
       None => overrides.get(e.id).unwrap_or(e.probability)
     }
-    values.push((1.0 - p) * values[node.low] + p * values[node.high])
+  })
+}
+
+///|
+fn Tree::evaluate(self : Tree, weights : Array[Double]) -> Double {
+  let values = [0.0, 1.0]
+  for i = 2; i < self.nodes.length(); i = i + 1 {
+    let n = self.nodes[i]
+    let p = weights[n.variable]
+    values.push((1.0 - p) * values[n.low] + p * values[n.high])
   }
   values[self.root]
+}
+
+///|
+pub fn Tree::probability(
+  self : Tree,
+  overrides : Map[String, Double],
+  forced : Map[String, Bool],
+) -> Double raise FaultError {
+  self.evaluate(self.weights(overrides, forced))
 }
 
 ///|
