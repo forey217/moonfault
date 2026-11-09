@@ -15,6 +15,7 @@ jobs:
           version: '0.10.15+943464bfa'
           core-version: '0.10.15+943464bfa'
       - run: moon version --all
+      - run: moon update
       - run: moon fmt --check
       - run: moon check --target js --deny-warn
       - run: moon test --target js --deny-warn

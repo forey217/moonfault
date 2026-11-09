@@ -1,39 +1,32 @@
-# MoonFault
+# MoonFault 0.2.0
 
-MoonBit 原生静态故障树分析库。一个基础事件即使被多个分支引用，也只计作一个随机变量，避免把共享电源等共同原因误当成独立故障重复相乘。
+MoonBit 原生静态故障树分析与 Open-PSA MEF 交换库。多个分支引用同一个事件时使用同一个随机变量，避免把共享电源等共同原因误算成独立故障。
 
-支持 AND、OR、k-of-n 门、共享子图、ROBDD 概率计算、事件状态干预、Birnbaum 重要度、完整最小割集及割集概率联合上界。概率计算按声明的独立基础事件模型进行，数值使用 binary64；“精确”指不使用罕见事件截断或蒙特卡洛近似，不表示浮点数无舍入误差。
+- 定量分析：ROBDD 顶事件概率、状态干预、Birnbaum、Fussell–Vesely（风险下降定义）、RAW、RRW 和单列的 SCRAM DIF。零分母与浮点溢出有明确状态。
+- 定性分析：支持 AND、OR、NOT、XOR、IFF、蕴含、NAND/NOR、投票和基数门。完整素蕴含项保留事件正常与故障两种文字，并包含不直接出现在 BDD 路径上的共识项。单调模型继续提供普通最小割集。
+- 模型交换：读写 Open-PSA MEF 2.0 的静态布尔档，处理房屋事件、组件作用域、全路径引用与静态概率表达式。
 
-## 运行
-
-安装 MoonBit 工具链和 Node.js 24，在仓库目录执行：
+安装 MoonBit 和 Node.js 24 后，在仓库运行：
 
 ```sh
-moon test --target js --deny-warn
+moon update
 npm run verify
-node scripts/cli.mjs examples/shared-power.json
+node scripts/cli.mjs mef-analyze examples/mef/shared-power.xml
+node scripts/cli.mjs mef-analyze examples/mef/consensus.xml
+node scripts/cli.mjs mef-export examples/nonmonotone.json --out exactly-one.xml
+node scripts/cli.mjs mef-analyze exactly-one.xml
 ```
 
-Windows 可执行 `powershell -File scripts/verify.ps1`。CI 另外执行 Wasm、Wasm GC 和 Linux native 测试。Node 只负责 JSON 文件读写；建模、决策图、概率和割集计算全部在 MoonBit。
+验证结果和导出的 XML 写入 `_build/reports/`。Windows 可用 `powershell -File scripts/verify.ps1` 测试 JS、Wasm GC 和 Wasm。GitHub CI 另跑 Linux native 和独立 SCRAM 对照。
 
-## 三个使用场景
+## 三个可复核场景
 
-1. `shared-power.json`：双服务器共享一个电源。服务故障是 `(power OR server_a) AND (power OR server_b)`，结果为 0.02245；不能把两台服务整体故障率当成独立事件相乘。
-2. `redundant-storage.json`：四盘系统中至少两盘失效，分析六个二元最小割集和总体失效概率。
-3. `deployment.json`：网络或“数据库和缓存同时失效”导致部署不可用；将网络强制为正常，比较修复后的概率和重要度。
+1. [共享电源](examples/mef/shared-power.xml)：顶事件概率 0.02245，最小割集为 {power} 和 {server_a, server_b}；电源 RRW 为 8.98。可比较更换电源与更换单台服务器的模型影响。
+2. [条件切换](examples/mef/consensus.xml)：概率 0.34。除正负模式分支外，找到 {left, right} 共识项；模式事件的 Birnbaum 为 −0.3，RAW 小于 1。展示普通割集无法表达的负文字。
+3. [组件模型交换](examples/mef/scoped-switch.xml)：两个组件分别声明同名私有事件，靠作用域区分。计算概率 0.0882；导出再读保持结果和元数据。
 
-运行 `npm run examples` 会将真实输出写入 `_build/reports/`。独立真值表测试也在同一目录生成验证记录。
+## 安装与范围
 
-## 安装与接口
+`moon add forey217/moonfault@0.2.0`，在 `moon.pkg` 导入 `forey217/moonfault`。见[独立消费者](examples/consumer/consumer.mbt)、[分析契约](docs/contract.md)、[MEF 范围](docs/mef-profile.md)、[JSON 与 CLI](docs/json-api.md)、[验证说明](docs/verification.md)。
 
-```sh
-moon add forey217/moonfault@0.1.0
-```
-
-导入 `forey217/moonfault`。见 [独立消费者](examples/consumer/consumer.mbt)、[接口契约](docs/contract.md)、[JSON 输入输出](docs/json-api.md) 和 [验证方法](docs/verification.md)。公开 API 清单由 `moon info` 生成在 `pkg.generated.mbti`。
-
-## 范围
-
-这是静态、相干故障树工具，不实现动态门、修复过程仿真、故障率时间积分或任意相关随机变量模型。共享事件可显式建模；基础事件之间的独立性和输入概率由调用方负责。未知引用、环、不合法概率和资源预算不足均返回明确错误，不把部分割集当成完整结果。
-
-MIT。算法参考和生态对比见 [contract.md](docs/contract.md)。
+本库处理固定概率、独立基础事件的静态 Boolean DAG。暂不处理事件树、动态门、任务时间分布、CCF 组或跨文件 include；超出范围的语义会报错。概率使用 binary64，“精确”指未用罕见事件截断或抽样。算法是原创 MoonBit 实现，MIT；XML 层复用 Apache-2.0 的 [Milky2018/xml](https://mooncakes.io/docs/Milky2018/xml@0.5.0)。
