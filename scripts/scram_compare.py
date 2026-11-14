@@ -72,14 +72,28 @@ for case, source, top, alias in [
     rows = root.findall("./results/importance/basic-event")
     if not rows:
         raise AssertionError(f"{case}: SCRAM has no importance results")
+    boundary_differences = []
     for row in rows:
         attr = row.attrib
         risk = risks[attr["name"]]
         compare(risk["birnbaum"], float(attr["MIF"]))
         for key, other in [("fussell_vesely", "CIF"), ("scram_dif", "DIF"), ("raw", "RAW"), ("rrw", "RRW")]:
+            # SCRAM 0.16.2 leaves RRW at its zero-initialized value when
+            # Q - p*MIF == 0 (src/importance_analysis.cc). Preserve and report
+            # this representational difference rather than equating 0 to infinity.
+            if (case == "exponential" and key == "rrw" and risk[key]["status"] == "infinite"
+                    and risk["if_working"] == 0 and actual["probability"] > 0):
+                assert risk[key]["value"] is None
+                compare(float(attr[other]), 0.0)
+                boundary_differences.append({"event": attr["name"], "metric": key,
+                    "moonfault": "infinite", "scram": 0.0,
+                    "reason": "Q>0 and Q0=0; SCRAM 0.16.2 leaves zero sentinel"})
+                continue
             if risk[key]["status"] != "finite":
                 raise AssertionError(f"{case}: fixture should have finite {key}")
             compare(risk[key]["value"], float(attr[other]))
-    evidence.append({"fixture": case, "topProbability": actual["probability"], "primes": len(expected), "importanceRows": len(rows), "passed": True})
-    print(f"{case}: SCRAM parsed export; probability, signed primes, and {len(rows)} importance rows agree")
+    if case == "exponential":
+        assert len(boundary_differences) == 1
+    evidence.append({"fixture": case, "topProbability": actual["probability"], "primes": len(expected), "importanceRows": len(rows), "boundaryDifferences": boundary_differences, "passed": True})
+    print(f"{case}: SCRAM parsed export; probability, signed primes and finite importance agree; {len(boundary_differences)} documented boundary differences")
 (REPORTS / "scram-interop.json").write_text(json.dumps({"tool": version, "cases": evidence, "passed": True}, indent=2) + "\n", encoding="utf-8")

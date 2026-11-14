@@ -30,6 +30,7 @@ jobs:
       - name: Compare MEF exports, signed primes and risk factors with SCRAM
         run: python3 scripts/scram_compare.py
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: moonfault-verification
           path: _build/reports/
