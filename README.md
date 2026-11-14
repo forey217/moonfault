@@ -1,4 +1,6 @@
-# MoonFault 0.2.0
+# MoonFault
+
+项目最终交付目标是完整实现 Open-PSA MEF 2.0 的模型读写、语义处理及分析结果交换。当前发布版本为 0.2.0，已完成下述静态故障树能力；它是阶段成果，尚未达到完整标准一致性。完整范围、未完成项和发布验收门槛见[标准实现计划](docs/mef-roadmap.md)，参赛说明见[项目申报书](docs/submission.md)与[11 月 13 日反馈答复](docs/review-2026-11-14.md)。
 
 MoonBit 原生静态故障树分析与 Open-PSA MEF 交换库。多个分支引用同一个事件时使用同一个随机变量，避免把共享电源等共同原因误算成独立故障。
 
@@ -29,4 +31,4 @@ node scripts/cli.mjs mef-analyze exactly-one.xml
 
 `moon add forey217/moonfault@0.2.0`，在 `moon.pkg` 导入 `forey217/moonfault`。见[独立消费者](examples/consumer/consumer.mbt)、[分析契约](docs/contract.md)、[MEF 范围](docs/mef-profile.md)、[JSON 与 CLI](docs/json-api.md)、[验证说明](docs/verification.md)。
 
-本库处理固定概率、独立基础事件的静态 Boolean DAG。暂不处理事件树、动态门、任务时间分布、CCF 组或跨文件 include；超出范围的语义会报错。概率使用 binary64，“精确”指未用罕见事件截断或抽样。算法是原创 MoonBit 实现，MIT；XML 层复用 Apache-2.0 的 [Milky2018/xml](https://mooncakes.io/docs/Milky2018/xml@0.5.0)。
+当前 0.2.0 处理固定概率、独立基础事件的静态 Boolean DAG。事件树、任务时间分布、CCF 组、替换规则及跨文件 include 尚未实现，已列入最终交付计划；当前遇到这些输入仍会报错。标准以外的厂商动态门扩展另行记录，不能与标准内的事件树及时间表达式混为一谈。概率使用 binary64，“精确”指未用罕见事件截断或抽样。算法是原创 MoonBit 实现，MIT；XML 层复用 Apache-2.0 的 [Milky2018/xml](https://mooncakes.io/docs/Milky2018/xml@0.5.0)。

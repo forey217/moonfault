@@ -5,3 +5,5 @@ MoonBit `0.10.15+943464bfa`, Moon `0.1.20261012` and Node.js 24. The workspace c
 `npm run verify` regenerates the reports. `python3 scripts/scram_compare.py` invokes the independent SCRAM executable installed in Linux CI. It validates MoonFault's XML output and compares top probability, signed products, Birnbaum, FV (SCRAM CIF), DIF, RAW and RRW. CI uploads the actual SCRAM XML and `scram-interop.json`. Decimal comparisons allow SCRAM's XML output rounding; the exhaustive signed oracle uses 1e-12 tolerance.
 
 Tests demonstrate the declared static profile. They do not certify all MEF models or real-world input data.
+
+The November 14 application revision changes the final delivery scope, not this test result. Remaining MEF layers must acquire their own positive, negative, round-trip and semantic reference cases before the project can claim full implementation; see [the acceptance plan](mef-roadmap.md). Historical four-backend and SCRAM evidence belongs to code commit `6b140a89e0112ff22f6ccc43271193a2318abc8e` ([CI](https://github.com/forey217/moonfault/actions/runs/42634840257)).

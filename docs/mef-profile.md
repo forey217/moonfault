@@ -1,5 +1,7 @@
 # Open-PSA MEF 2.0 static profile
 
+This document describes the shipped **0.2.0** API, not the final project scope. Full MEF 2.0 support is the delivery target in the [implementation and acceptance plan](mef-roadmap.md). Features listed as unsupported below remain unimplemented today; the plan does not change runtime behavior or certify conformance.
+
 Sources: [Fault Tree Layer](https://open-psa.github.io/mef/mef/fault_tree_layer.html) and [Stochastic Layer](https://open-psa.github.io/mef/mef/stochastic_layer.html). MoonFault covers static Boolean model exchange with fixed probabilities.
 
 | Construct | Behavior |
