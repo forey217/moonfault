@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — 2026-11-14
+
+- Implement 27 MEF numerical operations, Boolean comparisons and lazy conditional expressions; validate syntax, references and cycles in all branches.
+- Evaluate exponential, GLM and shifted Weibull probabilities with explicit arguments and stable small-probability/extreme-input formulas.
+- Check arithmetic intermediates and parameter value categories; accept exact integer literals beyond Int32.
+- Add independent scalar/time-distribution oracles, public consumer and round-trip examples, and extend SCRAM comparison to exponential probability.
+- Retain the full MEF delivery target while documenting remaining mission context, units, random deviates, CCF and event-tree work.
+
 ## 0.2.0 — 2026-11-09
 
 - Add complete signed prime families and consensus terms for nonmonotone models.

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opsa-mef>
+  <define-fault-tree name="Exposure">
+    <define-gate name="top"><basic-event name="pump"/></define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="pump">
+      <exponential><float value="0.0001"/><float value="1000"/></exponential>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

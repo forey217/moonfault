@@ -47,6 +47,7 @@ for case, source, top, alias in [
     ("consensus", "examples/mef/consensus.xml", None, {}),
     ("scoped-switch", "examples/mef/scoped-switch.xml", None, {}),
     ("redundant-storage", "examples/redundant-storage.json", None, {}),
+    ("exponential", "examples/mef/exponential.xml", None, {}),
 ]:
     normalized = REPORTS / f"{case}.scram-input.xml"
     normalized.write_text(run(["node", "scripts/cli.mjs", "mef-export", source]), encoding="utf-8", newline="\n")

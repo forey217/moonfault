@@ -309,85 +309,19 @@ fn MefTable::parameter(
   }
   active[d.path] = true
   let value = self.expression(d.body[0], d.scope, values, active, depth + 1)
+  match d.source.get("unit") {
+    Some("bool") => ignore(expression_bool(d.source, value))
+    Some("int") => {
+      guard value == @math.floor(value) && value.abs() <= 9007199254740991.0 else {
+        raise d.source.error(
+          "int parameter must be an exactly representable integer",
+        )
+      }
+    }
+    _ => ()
+  }
   active.remove(d.path)
   values[d.path] = value
-  value
-}
-
-///|
-fn MefTable::expression(
-  self : MefTable,
-  n : XmlNode,
-  scope : String,
-  values : Map[String, Double],
-  active : Map[String, Bool],
-  depth : Int32,
-) -> Double raise FaultError {
-  guard depth <= 128 else { raise Limit("MEF expression depth exceeds 128") }
-  let value = match n.tag {
-    "float" => {
-      n.leaf(["value"])
-      let literal = n.require("value")
-      @string.parse_double(literal.trim()) catch {
-        _ => raise n.error("invalid floating-point literal")
-      }
-    }
-    "int" => {
-      n.leaf(["value"])
-      xml_int(n, "value").to_double()
-    }
-    "bool" => if boolean_value(n) { 1.0 } else { 0.0 }
-    "parameter" => {
-      n.leaf(["name"])
-      self.parameter(
-        self.read_reference(n, scope, "parameter"),
-        values,
-        active,
-        depth,
-      )
-    }
-    "neg" | "add" | "sub" | "mul" | "div" => {
-      n.allow_attributes([])
-      n.structural()
-      if n.tag == "neg" {
-        guard n.children.length() == 1 else {
-          raise n.error("neg needs one operand")
-        }
-      } else {
-        guard n.children.length() >= 2 else {
-          raise n.error("arithmetic needs at least two operands")
-        }
-      }
-      let xs = n.children.map(c => {
-        self.expression(c, scope, values, active, depth + 1)
-      })
-      let mut result = xs[0]
-      if n.tag == "neg" {
-        result = -result
-      } else {
-        for i = 1; i < xs.length(); i = i + 1 {
-          let x = xs[i]
-          result = match n.tag {
-            "add" => result + x
-            "sub" => result - x
-            "mul" => result * x
-            _ => {
-              guard x != 0.0 else { raise n.error("division by zero") }
-              result / x
-            }
-          }
-        }
-      }
-      result
-    }
-    _ =>
-      raise n.error(
-        "unsupported probability expression; supply static constant probabilities",
-      )
-  }
-  guard !value.is_inf() && !value.is_nan() else {
-    raise n.error("nonfinite probability expression")
-  }
   value
 }
 
@@ -422,6 +356,17 @@ pub fn import_mef(source : String) -> MefDocument raise FaultError {
         t.collect(node.content(), scope, true, "tree")
       }
       _ => raise node.error("outside the static MEF profile")
+    }
+  }
+  let checked : Map[String, Bool] = Map([])
+  let checking : Map[String, Bool] = Map([])
+  for _, d in t.declarations {
+    if d.category == "parameter" {
+      t.check_parameter(d, checked, checking, 0)
+    } else if d.category == "basic-event" {
+      for body in d.body {
+        t.check_expression(body, d.scope, checked, checking, 0)
+      }
     }
   }
   let basics : Array[MefBasic] = []

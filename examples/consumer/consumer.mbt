@@ -23,3 +23,12 @@ test "consumer imports MEF and evaluates signed primes and worth metrics" {
   assert_true(t.prime_implicants(10)[0][0].failed == false)
   assert_true(t.risk_importance(Map([]), Map([]))[0].raw is @lib.Finite(0.0))
 }
+
+///|
+test "consumer computes tiny lifetime probability through installed MEF API" {
+  let d = @lib.import_mef(
+    "<opsa-mef><define-fault-tree name=\"T\"><define-gate name=\"top\"><basic-event name=\"a\"/></define-gate></define-fault-tree><model-data><define-basic-event name=\"a\"><exponential><float value=\"1e-20\"/><float value=\"1\"/></exponential></define-basic-event></model-data></opsa-mef>",
+  )
+  let p = d.compile("", Map([]), []).probability(Map([]), Map([]))
+  assert_true((p / 1.0e-20 - 1.0).abs() < 1.0e-12)
+}

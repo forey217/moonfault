@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opsa-mef name="Lifetime">
+  <label>固定任务时长下的指数失效、修复和磨损模型</label>
+  <define-fault-tree name="Plant">
+    <define-gate name="top">
+      <or><basic-event name="power"/><basic-event name="pump"/><basic-event name="wear"/></or>
+    </define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-parameter name="duration"><float value="100"/></define-parameter>
+    <define-parameter name="stress" unit="int"><int value="2"/></define-parameter>
+    <define-parameter name="rate">
+      <switch>
+        <case><eq><parameter name="stress"/><int value="1"/></eq><float value="0.0001"/></case>
+        <float value="0.0002"/>
+      </switch>
+    </define-parameter>
+    <define-basic-event name="power">
+      <exponential><parameter name="rate"/><parameter name="duration"/></exponential>
+    </define-basic-event>
+    <define-basic-event name="pump">
+      <GLM><float value="0.01"/><float value="0.001"/><float value="0.05"/><parameter name="duration"/></GLM>
+    </define-basic-event>
+    <define-basic-event name="wear">
+      <Weibull><float value="1000"/><float value="2"/><float value="10"/><parameter name="duration"/></Weibull>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

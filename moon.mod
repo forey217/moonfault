@@ -1,6 +1,6 @@
 name = "forey217/moonfault"
 
-version = "0.2.0"
+version = "0.3.0"
 
 readme = "README.md"
 
@@ -10,7 +10,7 @@ license = "MIT"
 
 preferred_target = "js"
 
-description = "Static Open-PSA MEF exchange, signed fault-tree primes, and exact BDD risk importance"
+description = "Open-PSA MEF expressions, lifetime probabilities, signed fault-tree primes and BDD importance"
 
 import {
   "Milky2018/xml@0.5.0",
